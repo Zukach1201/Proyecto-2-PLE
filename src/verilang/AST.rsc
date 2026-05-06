@@ -13,7 +13,7 @@ data Component
 
 data SpaceDef = spacedef(str identifier, list[str] parent); //parent puede ser vacia.
 
-data VarDef = vardef(list[Var] var);
+data VarDef = vardef(list[Var] vars);
 
 data Var = var(str identifier, str identifier2);
 
@@ -28,11 +28,28 @@ data QuantifierExp = quantifierexp(Quantifier quantifier, str identifier, str id
 data Quantifier = forall() | exists();
 
 data Expr 
-    = exprBin(Expr left, BinOp op, Expr right)
-    | exprUnary(UnOp op, Expr expr)
+    = exprUnary(UnOp op, Expr expr)
     | exprParen(Expr expr)
     | exprQuant(QuantifierExp qexp)
-    | exprAtomic(AtomicExp aexp);
+    | exprAtomic(AtomicExp aexp)
+    | expPoten(Expr left, Expr right)
+    | exprMul(Expr left, Expr right)
+    | exprDiv(Expr left, Expr right)
+    | exprMod(Expr left, Expr right)
+    | exprAdd(Expr left, Expr right)
+    | exprSub(Expr left, Expr right)
+    | exprLt(Expr left, Expr right)
+    | exprGt(Expr left, Expr right)
+    | exprGte(Expr left, Expr right)
+    | exprLte(Expr left, Expr right)
+    | exprNeq(Expr left, Expr right)
+    | exprEq(Expr left, Expr right)
+    | expAnd(Expr left, Expr right)
+    | expOr(Expr left, Expr right)
+    | expArrow(Expr left, Expr right)
+    | expEquiv(Expr left, Expr right)
+    | expImp(Expr left, Expr right)
+    | expIn(Expr left, Expr right);
 
 data AtomicExp 
     = atomicexp(str identifier)
@@ -45,9 +62,6 @@ data Rule = rule(str identifier, list[Expr] exprns);
 data AttrItems = atteritems(list[AttrItem] items);
 
 data AttrItem = attritem(str identifier, list[Expr] expr);
-
-data BinOp 
-    = add() | sub() | mul() | div() | pow() | mo() | lt() | gt() | gte() | lte() | nrq() | eq() | and() | or() | arrow() | equiv() | imp() | i();
 
 data UnOp = neg();
 

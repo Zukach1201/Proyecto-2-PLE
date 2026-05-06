@@ -1,0 +1,15 @@
+defmodule TestPrecedencia
+    using ModuloCalculo
+    
+    defvar 
+        a : Entero,
+        b : Entero,
+        c : Entero,
+        resultado : Booleano
+    end
+    
+    defrule (calculoComplejo) -> (
+        a + b * c > 10 and neg a = b
+    ) end
+    
+end

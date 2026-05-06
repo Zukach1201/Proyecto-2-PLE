@@ -4,7 +4,7 @@ defmodule MiSistemaVerilang
     defspace EspacioSensor < EspacioBase end
     
     defvar 
-        sensor1 : TipoSensor
+        sensor1 : TipoSensor,
         alerta : Booleano
     end
     

@@ -1,10 +1,12 @@
 module Syntax
 
+import ParseTree;
+
 layout Whitespace = [\t\n\r\ ]* !>> [\t\n\r\ ];
 
 keyword Keywords = "defmodule" | "end" | "using" | "defspace" | "defoperator" 
                  | "defexpression" | "defrule" | "forall" | "exists" | "and" 
-                 | "or" | "neg" | "in" | "defvar";
+                 | "or" | "neg" | "in" | "defvar" | "defer" ;
 
 lexical Identifier = Letter(Letter|Digit|"-")* !>> [a-zA-Z0-9\-] \ Keywords;
 lexical Letter = [a-zA-Z];
@@ -24,28 +26,53 @@ syntax Component
     | componentExp: ExpressionDef
     | componentRule: RuleDef;
 
-syntax SpaceDef = spaceDef: "defspace" Identifier ("\<" Identifier)? "end";
+syntax SpaceDef = spacedef: "defspace" Identifier ("\<" Identifier)? "end";
 
-syntax VarDef = vardef: "defvar" Var+ "end";
+syntax VarDef = vardef: "defvar" {Var ","}+ "end";
 
-syntax Var = var: Identifier ":" Identifier ","?;
+syntax Var = var: Identifier ":" Identifier;
 
-syntax OperatorDef = operatorDef: "defoperator" Identifier ":" Dominio AttrItems? "end";
+syntax OperatorDef = operatordef: "defoperator" Identifier ":" Dominio AttrItems? "end";
 
-syntax Dominio = dominio: Identifier {"-\>" Identifier}+;
+syntax Dominio = dominio: {Identifier "-\>"}+;
 
-syntax ExpressionDef = expressionDef: "defexpression" QuantifierExp AttrItems? "end";
+syntax ExpressionDef = expressiondef: "defexpression" QuantifierExp AttrItems? "end";
 
 syntax QuantifierExp = quantifierexp: "(" Quantifier Identifier "in" Identifier "." Expr ")";
 
 syntax Quantifier = forall:"forall" | exists:"exists";
 
 syntax Expr 
-    = exprUnary: UnOp Expr
-    | exprParen: "(" Expr ")"
-    | exprQuant: QuantifierExp
-    | exprAtomic: AtomicExp
-    > left exprBin: Expr BinOp Expr;
+    = exprUnary: UnOp op Expr expr
+    | exprParen: "(" Expr expr ")"
+    | exprQuant: QuantifierExp qexp
+    | exprAtomic: AtomicExp aexp
+    > left (expPoten: Expr left "**" Expr right)
+    > left (
+          exprMul: Expr left "*" Expr right
+        | exprDiv: Expr left "/" Expr right
+        | exprMod: Expr left "%" Expr right
+    )
+    > left (
+          exprAdd: Expr left "+" Expr right
+        | exprSub: Expr left "-" Expr right
+    )
+    > left (
+          exprLt:  Expr left "\<" Expr right
+        | exprGt:  Expr left "\>" Expr right
+        | exprGte: Expr left "\>=" Expr right
+        | exprLte: Expr left "\<=" Expr right
+        | exprNeq: Expr left "\<\>" Expr right
+        | exprEq:  Expr left "=" Expr right
+    )
+    > left expAnd: Expr left "and" Expr right
+    > left expOr:  Expr left "or" Expr right
+    > left (
+          expArrow:  Expr left "-\>" Expr right
+        | expEquiv:  Expr left "≡" Expr right
+        | expImp:    Expr left "=\>" Expr right
+        | expIn:     Expr left "in" Expr right
+    ) ;
 
 syntax AtomicExp 
     = atomicexp: Identifier
@@ -57,12 +84,7 @@ syntax Rule = rule: Identifier Expr*;
 
 syntax AttrItems = atteritems: "[" AttrItem+ "]";
 
-syntax AttrItem = attrItem: Identifier (":" Expr)?;
-
-syntax BinOp 
-    = add: "+" | sub: "-" | mul: "*" | div: "/" | pow: "**" | mo: "%"
-    | lt: "\<" | gt: "\>" | gte: "\>=" | lte: "\<=" | nrq: "\<\>" | eq: "="
-    | and: "and" | or: "or" | arrow: "-\>" | equiv: "≡" | imp: "=\>" | i: "in";
+syntax AttrItem = attritem: Identifier (":" Expr)?;
 
 syntax UnOp = neg: "neg";
 
