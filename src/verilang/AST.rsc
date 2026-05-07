@@ -11,13 +11,13 @@ data Component
     | componentExp(ExpressionDef expdef)
     | componentRule(RuleDef ruledef);
 
-data SpaceDef = spacedef(str identifier, list[str] parent); //parent puede ser vacia.
+data SpaceDef = spaceDef(str identifier, list[str] parent); //parent puede ser vacia.
 
 data VarDef = vardef(list[Var] vars);
 
 data Var = var(str identifier, str identifier2);
 
-data OperatorDef = operatordef(str identifier, Dominio dom, list[AttrItems] atteritems); //attrItems puede ser vacia.
+data OperatorDef = operatorDef(str identifier, Dominio dom, list[AttrItems] atteritems); //attrItems puede ser vacia.
 
 data Dominio = dominio(list[str] identifiers);
 
@@ -28,7 +28,7 @@ data QuantifierExp = quantifierexp(Quantifier quantifier, str identifier, str id
 data Quantifier = forall() | exists();
 
 data Expr 
-    = exprUnary(UnOp op, Expr expr)
+    = exprUnary(UnOp Unop, Expr expr)
     | exprParen(Expr expr)
     | exprQuant(QuantifierExp qexp)
     | exprAtomic(AtomicExp aexp)
@@ -61,7 +61,7 @@ data Rule = rule(str identifier, list[Expr] exprns);
 
 data AttrItems = atteritems(list[AttrItem] items);
 
-data AttrItem = attritem(str identifier, list[Expr] expr);
+data AttrItem = attrItem(str identifier, list[Expr] expr);
 
 data UnOp = neg();
 
