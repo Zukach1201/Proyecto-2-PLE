@@ -68,11 +68,11 @@ data AttrItem = attrItem(str identifier, list[Expr] expr);
 data UnOp = neg();
 
 data Literal 
-    = intliteral(str digits)
-    | floatliteral(str digits)
+    = intliteral(int digitsInt)
+    | floatliteral(str digitsFloat)
     | charliteral(str charValue)
     | stringliteral(str stringValue)
-    | boolliteral(str boolValue);
+    | boolliteral(bool boolValue);
 
 
 data Type 
