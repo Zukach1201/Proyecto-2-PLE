@@ -6,41 +6,55 @@ layout Whitespace = [\t\n\r\ ]* !>> [\t\n\r\ ];
 
 keyword Keywords = "defmodule" | "end" | "using" | "defspace" | "defoperator" 
                  | "defexpression" | "defrule" | "forall" | "exists" | "and" 
-                 | "or" | "neg" | "in" | "defvar" | "defer" ;
+                 | "or" | "neg" | "in" | "defvar" | "defer"
+                 | "Int" | "Float" | "Char" | "Bool" | "String"
+                 | "true" | "false" | "defdata";
 
 lexical Identifier = Letter(Letter|Digit|"-")* !>> [a-zA-Z0-9\-] \ Keywords;
 lexical Letter = [a-zA-Z];
 lexical Digit = [0-9];
 lexical IntLiteral = Digit+ !>> [0-9];
 lexical FloatLiteral = Digit+ "." Digit+ !>> [0-9];
-lexical CharLiteral = "\"" (Letter|Digit) "\"";
 
-start syntax Program = program: "defmodule" Identifier ImportModule* Component* "end";
+lexical StringLiteral = "\"" ![\"]* "\"";
+lexical CharLiteral = "\'" ![\'] "\'";
+lexical BoolLiteral = "true" | "false";
 
-syntax ImportModule = importmodule: "using" Identifier;
+start syntax Program = program: "defmodule" Identifier identifier ImportModule* imports Component* components "end";
 
+syntax ImportModule = importmodule: "using" Identifier identifier;
 syntax Component 
-    = componentSpace: SpaceDef
-    | componentVar: VarDef
-    | componentOp: OperatorDef
-    | componentExp: ExpressionDef
-    | componentRule: RuleDef;
+    = componentSpace: SpaceDef space
+    | componentVar: VarDef vardef
+    | componentOp: OperatorDef op
+    | componentExp: ExpressionDef expdef
+    | componentRule: RuleDef ruledef
+    | componentData: DataDef datadef;
 
-syntax SpaceDef = spacedef: "defspace" Identifier ("\<" Identifier)? "end";
+syntax SpaceDef = spaceDef: "defspace" Identifier identifier ("\<" Identifier parent)? "end";
 
 syntax VarDef = vardef: "defvar" {Var ","}+ "end";
 
-syntax Var = var: Identifier ":" Identifier;
+syntax DataDef = datadef: "defdata" Type typ Identifier identifier "=" "{" {Identifier ","}* elements "}" "end";
 
-syntax OperatorDef = operatordef: "defoperator" Identifier ":" Dominio AttrItems? "end";
+syntax Var = var: Type typ Identifier identifier ":" Identifier identifier2;
 
-syntax Dominio = dominio: {Identifier "-\>"}+;
+syntax OperatorDef = operatorDef: "defoperator" Type returnType Identifier identifier ":" Dominio dom AttrItems? atteritems "end";
 
-syntax ExpressionDef = expressiondef: "defexpression" QuantifierExp AttrItems? "end";
+syntax Dominio = dominio: {Identifier "-\>"}+ identifiers;
 
-syntax QuantifierExp = quantifierexp: "(" Quantifier Identifier "in" Identifier "." Expr ")";
+syntax ExpressionDef = expressiondef: "defexpression" Type typ QuantifierExp cuant AttrItems? atteritems "end";
+
+syntax QuantifierExp = quantifierexp: "(" Quantifier quantifier Identifier identifier "in" Identifier identifier2 "." Expr exp ")";
 
 syntax Quantifier = forall:"forall" | exists:"exists";
+
+syntax Type
+    = intType: "Int"
+    | floatType: "Float"
+    | charType: "Char"
+    | boolType: "Bool"
+    | stringType: "String";
 
 syntax Expr 
     = exprUnary: UnOp op Expr expr
@@ -84,11 +98,14 @@ syntax Rule = rule: Identifier Expr*;
 
 syntax AttrItems = atteritems: "[" AttrItem+ "]";
 
-syntax AttrItem = attritem: Identifier (":" Expr)?;
+syntax AttrItem = attrItem: Identifier identifier (":" Expr expr)?;
 
 syntax UnOp = neg: "neg";
 
 syntax Literal 
-    = intliteral: IntLiteral 
-    | floatliteral: FloatLiteral 
-    | charliteral: CharLiteral;
+    = intliteral: IntLiteral digits
+    | floatliteral: FloatLiteral digits
+    | charliteral: CharLiteral charValue
+    | stringliteral: StringLiteral stringValue
+    | boolliteral: BoolLiteral boolValue;
+

@@ -1,0 +1,24 @@
+defmodule Test
+
+defspace Persona end
+
+defvar
+  Int edad : Persona,
+  Bool activo : Persona,
+  String nombre : Persona,
+  Char inicial : Persona
+end
+
+defoperator Bool esMayor : Persona end
+
+defexpression Bool
+  (forall p in Persona . edad > 18)
+end
+
+defdata Int edades = {edad} end
+
+defrule
+  (r1 edad > 18) -> (r2 activo)
+end
+
+end
