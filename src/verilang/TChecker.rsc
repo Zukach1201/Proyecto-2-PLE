@@ -2,7 +2,7 @@ module TChecker
 
 import Syntax;
 import AST;
-extend analysis::typepal::TypePal; // ¡Aquí instalas TypePal!
+extend analysis::typepal::Typepal;
 
 // 1. Definimos los roles de VeriLang
 data IdRole = varId() | spaceId();
