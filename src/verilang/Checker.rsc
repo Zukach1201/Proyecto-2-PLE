@@ -173,13 +173,15 @@ public tuple[TypeEnv, list[str]] checkExpressionDef(
 }
 
 public tuple[TypeEnv, list[str]] checkDataDef(
-    datadef(Type typ, str identifier, list[str] elements), // Coincide exactamente con tu AST
+    datadef(Type typ, str identifier, list[str] elements), 
     TypeEnv vars,
     list[str] errors
 ) {
-    // Verificamos si el nombre del dato ya está usado
-    if (identifier in vars) {
-        errors += ["Data identifier <identifier> is already defined as a variable."];
+    // Punto 6: Verificar que cada elemento en la estructura de datos exista como variable o espacio
+    for (str e <- elements) {
+        if (!(e in vars)) {
+            errors += ["Data Error: Element <e> in data structure <identifier> does not exist."];
+        }
     }
     return <vars, errors>;
 }
