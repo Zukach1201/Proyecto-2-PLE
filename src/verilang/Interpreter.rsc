@@ -102,6 +102,13 @@ public Value eval(expImp(Expr l, Expr r), Env env) {
     throw "Error: Tipos incompatibles en implicación: =\>";
 }
 
+public Value eval(expArrow(Expr l, Expr r), Env env) {
+    if (vBool(bool b1) := eval(l, env), vBool(bool b2) := eval(r, env)) {
+        return vBool(!b1 || b2);
+    }
+    throw "Error: Tipos incompatibles en implicación: -\>";
+}
+
 public Value eval(expEquiv(Expr l, Expr r), Env env) {
     if (vBool(bool b1) := eval(l, env), vBool(bool b2) := eval(r, env)) return vBool(b1 == b2);
     throw "Error: Tipos incompatibles en equivalencia: ≡";

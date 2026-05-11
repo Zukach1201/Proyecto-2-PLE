@@ -177,10 +177,13 @@ public tuple[TypeEnv, list[str]] checkDataDef(
     TypeEnv vars,
     list[str] errors
 ) {
-    // Punto 6: Verificar que cada elemento en la estructura de datos exista como variable o espacio
+    VType expectedType = toVType(typ); // El tipo que el usuario definió para el defdata
+    
     for (str e <- elements) {
         if (!(e in vars)) {
             errors += ["Data Error: Element <e> in data structure <identifier> does not exist."];
+        } else if (vars[e] != expectedType) {
+            errors += ["Type Error: Element <e> is <vars[e]>, but data structure <identifier> expects <expectedType>."];
         }
     }
     return <vars, errors>;
@@ -228,6 +231,7 @@ public VType typeOf(exprNeq(Expr l, Expr r), TypeEnv env) = tBool();
 
 public VType typeOf(expAnd(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
 public VType typeOf(expOr(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
+public VType typeOf(expArrow(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
 public VType typeOf(expImp(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
 public VType typeOf(expEquiv(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
 
