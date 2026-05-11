@@ -2,6 +2,7 @@ module Main
 
 import Parser;
 import Interpreter;
+import Checker;
 import Syntax;
 import AST;
 import ParseTree;
@@ -18,7 +19,15 @@ public void verificar(loc archivo) {
     Tree arbol = parseVeriLang(archivo); 
     Program ast = implode(#Program, arbol);
     iprintln(ast);
-    runVeriLang(ast);
+    list[str] errores = checkProgram(ast);
+    
+    if (size(errores) > 0) {
+        println("ERRORES ENCONTRADOS:");
+        for (e <- errores) println("- <e>");
+    } else {
+        println("Todo legal. Iniciando interpretación...");
+        runVeriLang(ast);
+    }
 }
 
 public int main(int testArgument=0) {

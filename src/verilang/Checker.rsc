@@ -6,16 +6,19 @@ import IO;
 
 alias TypeEnv = map[str, VType];
 
-public list[str] checkProgram(program(str identifier, list[ImportModule] imports, list[Component] components)) {
-    set[str] spaces = collectSpaces(components);
-    TypeEnv vars = ();
-    list[str] errors = [];
+public list[str] checkProgram(Program p) { 
+    if (program(str identifier, list[ImportModule] imports, list[Component] components) := p) {
+        set[str] spaces = collectSpaces(components);
+        TypeEnv vars = ();
+        list[str] errors = [];
 
-    for (Component c <- components) {
-        <vars, errors> = checkComponent(c, spaces, vars, errors);
+        for (Component c <- components) {
+            <vars, errors> = checkComponent(c, spaces, vars, errors);
+        }
+
+        return errors;
     }
-
-    return errors;
+    return ["Error: El AST no tiene el formato esperado."];
 }
 
 public set[str] collectSpaces(list[Component] components) {
@@ -169,6 +172,18 @@ public tuple[TypeEnv, list[str]] checkExpressionDef(
     return <vars, errors>;
 }
 
+public tuple[TypeEnv, list[str]] checkDataDef(
+    datadef(Type typ, str identifier, list[str] elements), // Coincide exactamente con tu AST
+    TypeEnv vars,
+    list[str] errors
+) {
+    // Verificamos si el nombre del dato ya está usado
+    if (identifier in vars) {
+        errors += ["Data identifier <identifier> is already defined as a variable."];
+    }
+    return <vars, errors>;
+}
+
 public VType typeOfQuantifier(
     quantifierexp(Quantifier quantifier, str identifier, str identifier2, Expr exp),
     set[str] spaces,
@@ -188,4 +203,58 @@ public VType typeOfQuantifier(
     }
 
     return tUnknown();
+}
+
+public VType typeOf(exprAtomic(atomicexp(str id)), TypeEnv env) = env[id] ? tUnknown();
+
+public VType typeOf(exprAtomic(atomicexpsimple(intliteral(_))), TypeEnv env) = tInt();
+public VType typeOf(exprAtomic(atomicexpsimple(boolliteral(_))), TypeEnv env) = tBool();
+
+public VType typeOf(exprAdd(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tInt(), env);
+public VType typeOf(exprSub(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tInt(), env);
+public VType typeOf(exprMul(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tInt(), env);
+public VType typeOf(exprDiv(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tInt(), env);
+public VType typeOf(exprMod(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tInt(), env);
+public VType typeOf(expPoten(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tInt(), env);
+
+public VType typeOf(exprGt(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tBool(), env);
+public VType typeOf(exprLt(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tBool(), env);
+public VType typeOf(exprGte(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tBool(), env);
+public VType typeOf(exprLte(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tInt(), tBool(), env);
+public VType typeOf(exprEq(Expr l, Expr r), TypeEnv env) = tBool(); // Simplificado
+public VType typeOf(exprNeq(Expr l, Expr r), TypeEnv env) = tBool();
+
+public VType typeOf(expAnd(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
+public VType typeOf(expOr(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
+public VType typeOf(expImp(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
+public VType typeOf(expEquiv(Expr l, Expr r), TypeEnv env) = checkBinary(l, r, tBool(), tBool(), env);
+
+public VType typeOf(exprUnary(neg(), Expr e), TypeEnv env) = (typeOf(e, env) == tBool()) ? tBool() : tUnknown();
+public VType typeOf(exprParen(Expr e), TypeEnv env) = typeOf(e, env);
+
+public VType checkBinary(Expr l, Expr r, VType expectedIn, VType resultOut, TypeEnv env) {
+    if (typeOf(l, env) == expectedIn && typeOf(r, env) == expectedIn) {
+        return resultOut;
+    }
+    return tUnknown(); // O un tError personalizado
+}
+
+public tuple[TypeEnv, list[str]] checkRuleDef(
+    ruledef(Rule rule1, Rule rule2), // Cambiado r1/r2 por rule1/rule2 para evitar conflictos
+    TypeEnv vars,
+    list[str] errors
+) {
+    for (Expr e <- rule1.exprns) {
+        if (typeOf(e, vars) != tBool()) {
+            errors += ["Rule error in <rule1.identifier>: Expression must be Boolean."];
+        }
+    }
+    
+    for (Expr e <- rule2.exprns) {
+        if (typeOf(e, vars) != tBool()) {
+            errors += ["Rule error in <rule2.identifier>: Expression must be Boolean."];
+        }
+    }
+    
+    return <vars, errors>;
 }
